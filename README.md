@@ -17,4 +17,4 @@ npm install
 in the terminal. 
 
 You are set up now. If everything went right you are allso connected with 
-the remote branch of the git repo and now  you have a local copy of the complete repo.3
+the remote branch of the git repo and now  you have a local copy of the complete repo.
