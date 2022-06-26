@@ -1,7 +1,11 @@
 import express from 'express';
-// import Data from './db' ;
+import Joi from 'joi';
 
-const data = [
+const app = express();
+
+app.use(express.json())
+
+const topics = [
   {
     id: 1,
     imgUrl: 'assets/logo_ang_blue-bg.jpg',
@@ -73,34 +77,99 @@ const data = [
     Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure quas rerum harum, excepturi ea, deleniti
      omnis molestias numquam repellendus et illum est ut qui minima sunt dolorum sit libero fuga?</p> `
   },
+  {
+    "id": 9,
+    "title": "new text"
+}
 ];
 
-const app = express();
 
 //basic example get call
 app.get('/', (req, res) => {
   res.send('Hello World');
 });
 
-app.get('/api/courses', (req, res) => {
-  res.send([1, 2, 3]);
+// app.get('/api/courses', (req, res) => {
+//   res.send([1, 2, 3]);
+// }) 
+
+// app.get('/api/courses/:id', (req, res) => {
+//   res.send(req.params.id);
+// }) 
+
+app.get('/api/topics', (req, res) => {
+  res.send(topics);
+});
+
+app.post('/api/topics', (req, res) => {
+  // const schema = {
+  //   title: Joi.string().min(3).required()
+  // };
+
+  // const result = Joi.validate(req.body, schema);
+  // console.log(result);
+  // if(result.error) {
+  //   res.status(400).send(result.error.details[0].message);
+  //   return;
+  // }
+
+  /***************************************************** 
+   * All the commeented lines above, are not neccesary anymore
+   * because I made, and then used, the function validateTopic(),
+   * and because of reconstructoring
+   ************************************************/
+
+  const { error } = validateTopic(req.body)
+  if(error) {  //not result.error, constructoring
+    res.status(400).send(error.details[0].message);      // not result.error.details[0].message
+    return;
+  }
+
+  const topic = {
+    id: topics.length + 1,
+    title: req.body.title,
+    level: req.body.level
+  };
+  topics.push(topic);
+  res.send(topic);
+
+});
+
+app.get('/api/topics/:id', (req, res) => {
+
+  const topic = topics.find(t => t.id ==  parseInt(req.params.id));
+  if(!topic) res.status(404).send('The topic with the given ID was not found!');
+  res.send(topic);
+  // res.send(data)
+  // res.send(req.query && req.params);
 }) 
 
-app.get('/api/courses/:id', (req, res) => {
-  res.send(req.params.id);
-}) 
+app.put('/api/topics/:id',(req, res) => {
+  const topic = topics.find(t => t.id ==  parseInt(req.params.id));
+  if(!topic) res.status(404).send('The topic with the given ID was not found!');
 
-app.get('/api/posts/:year/:month', (req, res) => {
-  res.send(req.params);
-}) 
+  // const result = validateTopic(req.body)
+  const { error } = validateTopic(req.body)
+  if(error) {  //not result.error, constructoring
+    res.status(400).send(error.details[0].message);      // not result.error.details[0].message
+    return;
+  }
 
-app.get('/api/posts/data', (req, res) => {
+  topic.title = req.body.title;
+  topic.level = req.body.level;
+  res.send(topic);
+});
 
-  console.log(data)
-  console.log('YO hello')
-  res.send(data)
-  res.send(req.query);
-}) 
+
+const validateTopic  = (topic) => {
+  const schema = {
+    title: Joi.string().min(3).required(),
+    level: Joi.string().min(3).required()
+  };
+  
+  return Joi.validate(topic, schema);
+  
+}
 
 //create server annd listen to a port, here it is port 3000
 const port = process.env.PORT || 3000;
