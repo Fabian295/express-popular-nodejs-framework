@@ -128,7 +128,9 @@ app.post('/api/topics', (req, res) => {
   const topic = {
     id: topics.length + 1,
     title: req.body.title,
-    level: req.body.level
+    level: req.body.level,
+    description: req.body.description
+
   };
   topics.push(topic);
   res.send(topic);
@@ -157,6 +159,7 @@ app.put('/api/topics/:id',(req, res) => {
 
   topic.title = req.body.title;
   topic.level = req.body.level;
+  topic.description = req.body.description
   res.send(topic);
 });
 
@@ -164,12 +167,28 @@ app.put('/api/topics/:id',(req, res) => {
 const validateTopic  = (topic) => {
   const schema = {
     title: Joi.string().min(3).required(),
+    description: Joi.string().min(3).required(),
     level: Joi.string().min(3).required()
   };
   
   return Joi.validate(topic, schema);
   
 }
+
+// DELETE a  Topic
+app.delete('/api/topics/:id', (req, res) => {
+
+  const topic = topics.find(t => t.id ==  parseInt(req.params.id));
+  if(!topic) res.status(404).send('The topic with the given ID was not found!');
+
+  const index = topics.indexOf(topic);
+  topics.splice(index, 1);
+
+  res.send(topic);
+  // res.send(data)
+  // res.send(req.query && req.params);
+}) 
+
 
 //create server annd listen to a port, here it is port 3000
 const port = process.env.PORT || 3000;
